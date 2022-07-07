@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper  namespace="com.cuiwei.mapper.OrderMapper">
+
+    <resultMap id="orderMap" type="com.cuiwei.domain.Orders">
+
+        <id property="id" column="id"></id>
+        <result property="ordertime" column="ordertime"></result>
+        <result property="total" column="total"></result>
+        <result property="uid" column="uid"></result>
+
+        <!--association  :  在进行一对一关联查询配置时 使用association标签作为关联-->
+        <!--property   ：  要封装的实体属性名字-->
+        <!--javaType   : 是要封装的实体属性的属性类型的全路径-->
+        <association property="user" javaType="com.cuiwei.domain.User">
+            <id property="id" column="uid"></id>
+            <result property="username" column="username"></result>
+            <result property="birthday" column="birthday"></result>
+            <result property="sex" column="sex"></result>
+            <result property="address" column="address"></result>
+
+        </association>
+
+
+    </resultMap>
+
+
+    <!--一对一的关联查询：查询所有的订单，与此同时还要查询出每个订单的用户信息-->
+    <select id="findAllWithUsers" resultMap="orderMap">
+         SELECT * FROM orders o LEFT JOIN user u ON o.uid = u.id
+    </select>
+
+
+
+
+    <resultMap id="orderMap2" type="com.cuiwei.domain.Orders">
+        <id property="id" column="id"></id>
+        <result property="ordertime" column="ordertime"></result>
+        <result property="total" column="total"></result>
+        <result property="uid" column="uid"></result>
+
+
+        <!--问题：怎么去执行第二条Sql-->
+        <!--问题：如何执行第二条Sql的时候，把uid作为参数进行传递-->
+        <association property="user" javaType="com.cuiwei.domain.User"  select="com.cuiwei.mapper.UserMapper.fingById" column="uid" fetchType="eager">
+
+        </association>
+
+    </resultMap>
+<!--一对一嵌套查询-->
+    <select id="findAllWithUsers2" resultMap="orderMap2">
+        SELECT * FROM orders
+    </select>
+
+
+    <!--一对多嵌套查询-->
+    <select id="findByUid" resultType="com.cuiwei.domain.Orders" parameterType="int">
+        select * from orders where uid = #{uid}
+    </select>
+
+</mapper>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cuiwei.mapper.UserMapper">
+
+
+    <!--当前映射文件开启二级缓存-->
+    <cache ></cache>
+
+    <resultMap id="UserMap" type="User">
+        <id property="id" column="id"></id>
+        <result property="username" column="username"></result>
+        <result property="sex" column="sex"></result>
+        <result property="birthday" column="birthday"></result>
+        <result property="address" column="address"></result>
+
+
+        <!--一对多使用collection-->
+        <!--* 一对多的关联查询  查询所有用户，还要查询每个用的的订单信息-->
+        <collection property="ordersList" ofType="com.cuiwei.domain.Orders">
+            <id property="id" column="oid"></id>
+
+            <result property="ordertime" column="ordertime"></result>
+            <result property="total" column="total"></result>
+            <result property="uid" column="uid"></result>
+        </collection>
+
+    </resultMap>
+
+    <select id="findAllWithOrder" resultMap="UserMap">
+        SELECT u.*,o.id oid,o.ordertime,o.total,o.uid FROM orders o RIGHT JOIN USER u  ON o.uid = u.id
+    </select>
+
+
+    <!--多对多关联查询  查询所有用户，同时还要查询出每个用户所关联的角色信息-->
+
+
+    <resultMap id="UserRoleMap" type="com.cuiwei.domain.User">
+
+        <id property="id" column="id"></id>
+        <result property="username" column="username"></result>
+        <result property="sex" column="sex"></result>
+        <result property="birthday" column="birthday"></result>
+        <result property="address" column="address"></result>
+
+        <collection property="roleList" ofType="com.cuiwei.domain.Role">
+            <id property="id" column="rid"></id>
+            <result property="rolename" column="rolename"></result>
+            <result property="roleDesc" column="roleDesc"></result>
+
+
+        </collection>
+    </resultMap>
+
+    <select id="findAllWithRole" resultMap="UserRoleMap">
+
+        SELECT u.*,r.id rid ,r.rolename,r.roleDesc FROM USER  u LEFT JOIN  sys_user_role ur ON u.id = ur.userid
+			LEFT JOIN sys_role r ON ur.roleid = r.id
+    </select>
+
+    <!--根据ID查询信息-->
+    <!--useCache == true  表示当前satement使用二级缓存中-->
+    <select id="findById" resultType="com.cuiwei.domain.User" parameterType="int" useCache="true">
+        select * from user where id = #{id}
+    </select>
+
+
+
+
+    <!--一对多嵌套查询  查询所有用户，以及每个用户的订单信息-->
+    <resultMap id="userOrderMap" type="com.cuiwei.domain.User">
+        <id property="id" column="id"></id>
+        <result property="username" column="username"></result>
+        <result property="sex" column="sex"></result>
+        <result property="birthday" column="birthday"></result>
+        <result property="address" column="address"></result>
+
+
+        <!--fetchType 如果是lazy  就是延迟加载-->
+        <!-- fetchType  如果是eager  就是立即加载-->
+        <collection property="ordersList" ofType="com.cuiwei.domain.Orders" column="id" select="com.cuiwei.mapper.OrderMapper.findByUid"
+         >
+
+        </collection>
+
+    </resultMap>
+
+    <select id="findAllWithOrder2" resultMap="userOrderMap">
+            SELECT * FROM USER
+
+    </select>
+
+
+    <!--多对多嵌套查询  查询所有用户  以及用户的角色信息-->
+    <resultMap id="UserRoleMap2" type="com.cuiwei.domain.User">
+        <id property="id" column="id"></id>
+    <result property="username" column="username"></result>
+    <result property="sex" column="sex"></result>
+    <result property="birthday" column="birthday"></result>
+    <result property="address" column="address"></result>
+
+        <collection property="roleList" ofType="com.cuiwei.domain.Orders" column="id" select="com.cuiwei.mapper.RoleMapper.findByUid"></collection>
+    </resultMap>
+
+
+    <select id="findAllWithRole2" resultMap="UserRoleMap2">
+        SELECT * FROM USER
+    </select>
+
+</mapper>
